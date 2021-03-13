@@ -13,11 +13,8 @@
 
 use Illuminate\Support\Facades\{Route, Auth};
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/', 'HomeController@index')->name('home');
 
 Auth::routes();
+
+Route::get('/cabinet', 'Cabinet\HomeController@index')->name('cabinet');
