@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Entity\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\Auth\LoginService;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\{Request, RedirectResponse, Response};
+use Illuminate\Http\{Request, RedirectResponse};
 use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
     use ThrottlesLogins;
+
+    /**
+     * @var LoginService $service
+     */
+    protected $service;
 
     /**
      * Where to redirect users after login.
@@ -24,11 +29,13 @@ class LoginController extends Controller
     /**
      * Create a new controller instance.
      *
+     * @param LoginService $service
      * @return void
      */
-    public function __construct()
+    public function __construct(LoginService $service)
     {
         $this->middleware('guest')->except('logout');
+        $this->service = $service;
     }
 
     /**
@@ -42,11 +49,11 @@ class LoginController extends Controller
     }
 
     /**
-     *
      * Handle a login request to the application.
      *
      * @param LoginRequest $request
      * @return RedirectResponse
+     *
      * @throws ValidationException
      */
     public function login(LoginRequest $request): RedirectResponse
@@ -55,34 +62,17 @@ class LoginController extends Controller
             $this->fireLockoutEvent($request);
             $this->sendLockoutResponse($request);
         }
-
-       $authenticate = Auth::attempt(
-           $request->only(['email', 'password']),
-           $request->filled('remember')
-       );
-
-        if($authenticate) {
-            $request->session()->regenerate();
-            $this->clearLoginAttempts($request);
-            $user = Auth::user();
-            if ($user->status != USER::STATUS_ACTIVE) {
-                Auth::logout();
-                return back()->with('error', 'Account is not confirmed. Please check your e-mail');
-            }
-            return redirect()->intended(route('cabinet'));
+        try {
+            return $this->service->login($request);
+        }catch (ValidationException $e) {
+            throw $e;
         }
-
-        $this->incrementLoginAttempts($request);
-
-        throw ValidationException::withMessages([
-            $this->username() => [trans('auth.failed')],
-        ]);
     }
 
     /**
      * Log the user out of the application.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return RedirectResponse
      */
     public function logout(Request $request): RedirectResponse
@@ -94,7 +84,7 @@ class LoginController extends Controller
     }
 
     /**
-     * Get the login username to be used by the controller.
+     * Get the login username to be used by the service.
      *
      * @return string
      */

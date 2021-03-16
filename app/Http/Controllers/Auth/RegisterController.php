@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Auth;
 
 use App\Entity\User;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Mail\Auth\VerifyMail;
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\{Request, RedirectResponse, Response};
-use Illuminate\Support\Facades\{Hash, Mail, Validator};
-use Illuminate\Support\Str;
+use App\Services\Auth\RegisterService;
+use Illuminate\Http\RedirectResponse;
 
 class RegisterController extends Controller
 {
+    /**
+     * @var RegisterService $service
+     */
+    protected $service;
+
     /**
      * Where to redirect users after registration.
      *
@@ -23,11 +25,12 @@ class RegisterController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @return void
+     * @param RegisterService $service
      */
-    public function __construct()
+    public function __construct(RegisterService $service)
     {
         $this->middleware('guest');
+        $this->service = $service;
     }
 
     /**
@@ -48,22 +51,15 @@ class RegisterController extends Controller
      */
     protected function register(RegisterRequest $request): RedirectResponse
     {
-        $user = User::create([
-            'name' => $request['name'],
-            'email' => $request['email'],
-            'password' => Hash::make($request['password']),
-            'verify_token' => Str::random(),
-            'status' => User::STATUS_WAIT,
-        ]);
-
-        Mail::to($user->email)->send(new VerifyMail($user));
-        event(new Registered($user));
+        $this->service->register($request);
 
         return redirect()->route('login')
             ->with('success', 'Check your email and follow the link to verify your registration');
     }
 
     /**
+     * Verify a user after following the link from email
+     *
      * @param string $token
      * @return RedirectResponse
      */
@@ -74,15 +70,13 @@ class RegisterController extends Controller
                 ->with('error', 'Incorrect data to login. Please try again.');
         }
 
-        if ($user->status != User::STATUS_WAIT) {
+        try {
+            $this->service->verify($user->id);
             return redirect()->route('login')
-                ->with('error', 'Your e-mail has been already verified.');
+                ->with('success', 'Your e-mail has been verified. Please enter with your credentials.');
+        } catch (\DomainException $e) {
+            return redirect()->route('login')
+                ->with('error', $e->getMessage());
         }
-        $user->status = User::STATUS_ACTIVE;
-        $user->verify_token = null;
-        $user->save();
-
-        return redirect()->route('login')
-            ->with('success', 'Your e-mail has been verified. Please enter with your credentials.');
     }
 }
