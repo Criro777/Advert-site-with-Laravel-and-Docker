@@ -11,6 +11,9 @@ use Illuminate\Support\Str;
  * @property int id
  * @property string $name
  * @property string $email
+ * @property string $password
+ * @property string $verify_token
+ * @property string $role
  * @property string $status
  */
 class User extends Authenticatable
@@ -20,13 +23,17 @@ class User extends Authenticatable
     public const STATUS_WAIT = 'Wait';
     public const STATUS_ACTIVE = 'Active';
 
+    public const ROLE_USER = 'User';
+    public const ROLE_MODERATOR = 'Moderator';
+    public const ROLE_ADMIN = 'Admin';
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'status', 'verify_token'
+        'name', 'email', 'password', 'status', 'verify_token', 'role'
     ];
 
     /**
@@ -48,6 +55,61 @@ class User extends Authenticatable
     ];
 
     /**
+     * @return array
+     */
+    public static function statusesList(): array
+    {
+        return [
+            self::STATUS_WAIT => 'Wait',
+            self::STATUS_ACTIVE => 'Active'
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function rolesList(): array
+    {
+        return [
+            self::ROLE_USER => 'User',
+            self::ROLE_MODERATOR => 'Moderator',
+            self::ROLE_ADMIN => 'Admin',
+        ];
+    }
+
+    /**
+     * @return bool
+     */
+    public function isWait(): bool
+    {
+        return $this->status === self::STATUS_WAIT;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isModerator(): bool
+    {
+        return $this->role === self::ROLE_MODERATOR;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /**
      * @param string $name
      * @param string $email
      * @param string $password
@@ -64,6 +126,11 @@ class User extends Authenticatable
         ]);
     }
 
+    /**
+     * @param $name
+     * @param $email
+     * @return static
+     */
     public static function createByAdmin($name, $email): self
     {
         return static::create([
@@ -86,13 +153,17 @@ class User extends Authenticatable
         ]);
     }
 
-    public function isWait(): bool
+    /**
+     * @param $role
+     */
+    public function changeRole($role): void
     {
-        return $this->status === self::STATUS_WAIT;
-    }
-
-    public function isActive(): bool
-    {
-        return $this->status === self::STATUS_ACTIVE;
+        if (!array_key_exists($role, self::rolesList())) {
+            throw new \InvalidArgumentException('Incorrect role "' . $role . '"');
+        }
+        if ($this->role === $role) {
+            throw new \DomainException('Role is already assigned.');
+        }
+        $this->update(['role' => $role]);
     }
 }
