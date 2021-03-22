@@ -20,17 +20,45 @@ class UsersController extends Controller
     public function __construct(RegisterService $register)
     {
         $this->register = $register;
+        $this->middleware('can:manage-users');
     }
+
     /**
-     * Display a listing of the resource.
+     *  Display a listing of the resource.
      *
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderBy('id', 'asc')->paginate(20);
+        $query = User::orderBy('id');
 
-        return view('admin.users.index', compact('users'));
+        if (!empty($value = $request->get('id'))) {
+            $query->where('id', $value);
+        }
+
+        if (!empty($value = $request->get('name'))) {
+            $query->where('name', 'like', '%' . $value . '%');
+        }
+
+        if (!empty($value = $request->get('email'))) {
+            $query->where('email', 'like', '%' . $value . '%');
+        }
+
+        if (!empty($value = $request->get('status'))) {
+            $query->where('status', $value);
+        }
+
+        if (!empty($value = $request->get('role'))) {
+            $query->where('role', $value);
+        }
+
+        $users = $query->paginate(20);
+
+        $statuses = User::statusesList();
+        $roles = User::rolesList();
+
+        return view('admin.users.index', compact('users', 'statuses', 'roles'));
     }
 
     /**
@@ -78,7 +106,8 @@ class UsersController extends Controller
      */
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        $roles = User::rolesList();
+        return view('admin.users.edit', compact('user', 'roles'));
     }
 
     /**
