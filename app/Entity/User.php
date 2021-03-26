@@ -122,6 +122,7 @@ class User extends Authenticatable
             'email' => $email,
             'password' => bcrypt($password),
             'verify_token' => Str::uuid(),
+            'role' => self::ROLE_USER,
             'status' => self::STATUS_WAIT,
         ]);
     }
@@ -138,6 +139,7 @@ class User extends Authenticatable
             'email' => $email,
             'password' => bcrypt(Str::random()),
             'status' => self::STATUS_ACTIVE,
+            'role' => self::ROLE_USER
         ]);
     }
 
