@@ -16,13 +16,6 @@ class RegisterController extends Controller
     protected $service;
 
     /**
-     * Where to redirect users after registration.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/cabinet';
-
-    /**
      * Create a new controller instance.
      *
      * @param RegisterService $service

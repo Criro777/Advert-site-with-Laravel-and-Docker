@@ -41,7 +41,7 @@ class LoginService
                 Auth::logout();
                 return back()->with('error', 'Account is not confirmed. Please check your e-mail');
             }
-            return redirect()->intended(route('cabinet'));
+            return redirect()->intended(route('cabinet.home'));
         }
 
         $this->incrementLoginAttempts($request);

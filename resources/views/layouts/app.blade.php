@@ -61,7 +61,7 @@
                                 @can('admin-panel')
                                     <a class="dropdown-item" href="{{ route('admin.home') }}">Admin</a>
                                 @endcan
-                                <a class="dropdown-item" href="{{ route('cabinet') }}">Cabinet</a>
+                                <a class="dropdown-item" href="{{ route('cabinet.home') }}">Cabinet</a>
                                 <a class="dropdown-item" href="{{ route('logout') }}"
                                    onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">

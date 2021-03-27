@@ -10,13 +10,6 @@ class VerificationController extends Controller
     use VerifiesEmails;
 
     /**
-     * Where to redirect users after verification.
-     *
-     * @var string
-     */
-    protected $redirectTo = '/cabinet';
-
-    /**
      * Create a new controller instance.
      *
      * @return void

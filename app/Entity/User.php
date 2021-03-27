@@ -3,13 +3,13 @@
 namespace App\Entity;
 
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Str;
 
 /**
  * @property int id
  * @property string $name
+ * @property string $surname
  * @property string $email
  * @property string $password
  * @property string $verify_token
@@ -33,7 +33,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'status', 'verify_token', 'role'
+        'name', 'surname', 'email', 'password', 'status', 'verify_token', 'role'
     ];
 
     /**
