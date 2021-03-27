@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Adverts;
 
 use App\Entity\Adverts\Category;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Adverts\CategoryRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
@@ -30,18 +31,11 @@ class CategoryController extends Controller
     }
 
     /**
-     * @param \Illuminate\Http\Request $request
+     * @param \App\Http\Requests\Admin\Adverts\CategoryRequest $request
      * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
+    public function store(CategoryRequest $request): RedirectResponse
     {
-        $this->validate($request, [
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255',
-            'parent' => 'nullable|integer|exists:advert_categories,id',
-        ]);
-
         $category = Category::create([
             'name' => $request['name'],
             'slug' => $request['slug'],
@@ -57,7 +51,10 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        return view('admin.adverts.categories.show', compact('category'));
+        $parentAttributes = $category->parentAttributes();
+        $attributes = $category->attributes()->orderBy('sort')->get();
+
+        return view('admin.adverts.categories.show', compact('category', 'attributes', 'parentAttributes'));
     }
 
     /**
@@ -72,19 +69,12 @@ class CategoryController extends Controller
     }
 
     /**
-     * @param \Illuminate\Http\Request $request
+     * @param \App\Http\Requests\Admin\Adverts\CategoryRequest $request
      * @param \App\Entity\Adverts\Category $category
      * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Validation\ValidationException
      */
-    public function update(Request $request, Category $category): RedirectResponse
+    public function update(CategoryRequest $request, Category $category): RedirectResponse
     {
-        $this->validate($request, [
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255',
-            'parent' => 'nullable|integer|exists:advert_categories,id',
-        ]);
-
         $category->update([
             'name' => $request['name'],
             'slug' => $request['slug'],
