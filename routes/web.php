@@ -17,8 +17,12 @@ Route::get('/', 'HomeController@index')->name('home');
 
 Auth::routes();
 
+Route::get('/login/phone', 'Auth\LoginController@phone')->name('login.phone');
+Route::post('/login/phone', 'Auth\LoginController@twofactorAuth');
+
 Route::get('/verify/{token}', 'Auth\RegisterController@verify')->name('register.verify');
 
+//Cabinet routes
 Route::group(
     [
         'prefix' => 'cabinet',
@@ -29,13 +33,21 @@ Route::group(
     function () {
         Route::get('/', 'HomeController@index')->name('home');
 
-        Route::group(['prefix' => 'profile', 'as' => 'profile.'], function () {
-            Route::get('/', 'ProfileController@index')->name('home');
-            Route::get('/edit', 'ProfileController@edit')->name('edit');
-            Route::put('/update', 'ProfileController@update')->name('update');
-        });
-    }
-);
+        Route::group(
+            [
+                'prefix' => 'profile',
+                'as' => 'profile.'
+            ],
+            function () {
+                Route::get('/', 'ProfileController@index')->name('home');
+                Route::get('/edit', 'ProfileController@edit')->name('edit');
+                Route::put('/update', 'ProfileController@update')->name('update');
+                Route::post('/phone', 'PhoneController@send');
+                Route::get('/phone', 'PhoneController@show')->name('phone');
+                Route::put('/phone', 'PhoneController@verify')->name('phone.verify');
+                Route::post('/phone/auth', 'PhoneController@auth')->name('phone.auth');
+            });
+    });
 
 Route::group([
     'prefix' => 'admin',

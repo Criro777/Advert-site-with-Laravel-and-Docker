@@ -85,4 +85,34 @@ class LoginController extends Controller
     {
         return 'email';
     }
+
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Foundation\Application|\Illuminate\View\View
+     */
+    public function phone()
+    {
+        return view('auth.phone');
+    }
+
+
+    /**
+     * Handle a login request with two-factor authentication.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Validation\ValidationException
+     */
+    public function twoFactorAuth(Request $request): RedirectResponse
+    {
+        if ($this->hasTooManyLoginAttempts($request)) {
+            $this->fireLockoutEvent($request);
+            $this->sendLockoutResponse($request);
+        }
+
+        try {
+            return $this->service->verify($request);
+        }catch (ValidationException $e) {
+            throw $e;
+        }
+    }
 }

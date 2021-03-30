@@ -48,6 +48,7 @@ class ProfileController extends Controller
     /**
      * @param \App\Http\Requests\Cabinet\ProfileEditRequest $request
      * @return \Illuminate\Http\RedirectResponse
+     * @throws \Throwable
      */
     public function update(ProfileEditRequest $request): RedirectResponse
     {
