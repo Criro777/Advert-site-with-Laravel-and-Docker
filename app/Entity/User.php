@@ -134,6 +134,14 @@ class User extends Authenticatable
     }
 
     /**
+     * @return bool
+     */
+    public function hasFilledProfile(): bool
+    {
+        return !empty($this->name) && !empty($this->surname) && $this->isPhoneVerified();
+    }
+
+    /**
      * @param string $name
      * @param string $email
      * @param string $password
@@ -167,6 +175,9 @@ class User extends Authenticatable
         ]);
     }
 
+    /**
+     *
+     */
     public function verify(): void
     {
         if (!$this->isWait()) {
